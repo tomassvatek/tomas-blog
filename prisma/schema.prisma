@@ -1,18 +1,11 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlite"
+    provider = "postgres"
     url      = "file:./db.sqlite"
     // url      = env("DATABASE_URL")
-}
-
-model Example {
-    id String @id @default(cuid())
 }
 
 // Necessary for Next auth
@@ -50,6 +43,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+    Post          Post[]
 }
 
 model VerificationToken {
@@ -58,4 +52,40 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Lookup {
+    id            String          @id @default(cuid())
+    name          String
+    type          String
+    PostTranslate PostTranslate[]
+}
+
+model Post {
+    id            String          @id @default(cuid())
+    title         String
+    authorId      String
+    author        User            @relation(fields: [authorId], references: [id])
+    Topic         Topic?          @relation(fields: [topicId], references: [id])
+    topicId       String?
+    PostTranslate PostTranslate[]
+}
+
+model PostTranslate {
+    id         String   @id @default(cuid())
+    postId     String
+    language   Lookup   @relation(fields: [languageId], references: [id])
+    languageId String
+    title      String
+    content    String
+    createdAt  DateTime
+    updatedAt  DateTime
+    post       Post     @relation(fields: [postId], references: [id])
+}
+
+model Topic {
+    id   String @id @default(cuid())
+    name String
+    type String
+    Post Post[]
 }
